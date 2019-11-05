@@ -3,13 +3,9 @@ package com.example.wbdvf19widgetserver.controllers;
 import com.example.wbdvf19widgetserver.models.*;
 import com.example.wbdvf19widgetserver.models.Module;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.*;
 
 @RestController
@@ -17,25 +13,48 @@ import java.util.*;
 
 public class CourseController {
 
-    ObjectMapper mapper = new ObjectMapper();
-
     List<Course> courses = new ArrayList<>();
 
     {
 
         Course course1 = new Course("CS3500: Object Oriented design", "3245674", new ArrayList<>());
-        Module module1 = new Module("Module 1", "567199", new ArrayList<>());
+        Course course2 = new Course("CS2500: Fundamentals of Computer Science 1", "5559011", new ArrayList<>());
+        Module module1 = new Module("Module 1", "5671992", new ArrayList<>());
+        Module module2 = new Module("Module 2", "4901640", new ArrayList<>());
+        Module module3 = new Module("Module 1.1", "4901640", new ArrayList<>());
         Lesson lesson1 = new Lesson("Lesson 1", "5678943", new ArrayList<>());
+        Lesson lesson2 = new Lesson("Lesson 2", "4333301", new ArrayList<>());
+        Lesson lesson4 = new Lesson("Lesson 1.1", "2299880", new ArrayList<>());
         Topic topic1 = new Topic("Topic 1", "34454");
+        Topic topic2 = new Topic("Topic 2", "37854");
+        Topic topic3 = new Topic("Topic 3", "18921");
+        Topic topic4 = new Topic("Topic 4", "85941");
+        Topic topic5 = new Topic("Topic 5", "09121");
+        Topic topic6 = new Topic("Topic 6", "83421");
+        Topic topic7 = new Topic("Topic 1.1", "83421");
+
 
         lesson1.addTopic(topic1);
+        lesson1.addTopic(topic2);
+        lesson1.addTopic(topic3);
+        lesson2.addTopic(topic4);
+        lesson2.addTopic(topic5);
+        lesson2.addTopic(topic6);
         module1.addLesson(lesson1);
+        module1.addLesson(lesson2);
         course1.addModule(module1);
+        course1.addModule(module2);
+
+        lesson4.addTopic(topic7);
+        module3.addLesson(lesson4);
+        course2.addModule(module3);
+
         courses.add(course1);
+        courses.add(course2);
+
+
     }
 
-    public CourseController() throws JsonProcessingException {
-    }
 
     @GetMapping("/api/courses")
     public List<Course> findAllCourses() {
