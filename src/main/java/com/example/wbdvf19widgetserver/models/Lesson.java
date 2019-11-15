@@ -1,16 +1,44 @@
 package com.example.wbdvf19widgetserver.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
+
+@Entity
+@Table(name="lessons")
 public class Lesson {
     private String title;
-    private String id;
-    private List<Topic> topics;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
-    public Lesson(String name, String id, List<Topic> topics) {
+    @ManyToOne
+    @JsonIgnore
+    private Module module;
+
+    @OneToMany(mappedBy="lesson", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<Topic> topics = new ArrayList<>();
+
+    public Lesson() {
+
+    }
+
+    public Module getModule() {
+        return module;
+    }
+
+    public void setModule(Module module) {
+        this.module = module;
+    }
+
+
+
+    public Lesson(String name) {
         this.title = name;
         this.id = id;
-        this.topics = topics;
     }
 
     public String getTitle() {
@@ -21,11 +49,11 @@ public class Lesson {
         this.title = title;
     }
 
-    public String getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -33,7 +61,7 @@ public class Lesson {
         return topics;
     }
 
-    public void addTopic(Topic topic) {
-        this.topics.add(topic);
+    public void setTopic(List<Topic> topics) {
+        this.topics = topics;
     }
 }

@@ -1,6 +1,11 @@
 package com.example.wbdvf19widgetserver.controllers;
 
+import com.example.wbdvf19widgetserver.models.Lesson;
+import com.example.wbdvf19widgetserver.models.Topic;
 import com.example.wbdvf19widgetserver.models.Widget;
+import com.example.wbdvf19widgetserver.repositories.TopicRepository;
+import com.example.wbdvf19widgetserver.repositories.WidgetRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -9,112 +14,91 @@ import java.util.*;
 @CrossOrigin(origins = "*")
 public class WidgetController {
 
-    HashMap<String, List<Widget>> widgets = new HashMap<String, List<Widget>>();
-    {
-        Widget w1 = new Widget(Widget.Type.HEADING, 0, "", 1,"The document object model",
-                "", "", "", "", true, "1234421"
-                );
-        Widget w2 = new Widget(Widget.Type.LIST, 0, "", 1,"",
-                "Spring, Node, DataBases", "", "", "", true, "1221431"
-        );
-        List<Widget> widgetsFor34454 = new ArrayList<>();
-        List<Widget> widgetsFor37854 = new ArrayList<>();
 
-        widgetsFor37854.add(w2);
-        widgetsFor34454.add(w1);
-        widgets.put("34454", widgetsFor34454);
-        widgets.put("37854", widgetsFor37854);
+    @Autowired
+    WidgetRepository repository;
 
+    @Autowired
+    TopicRepository topicRepository;
 
-
-    }
 
     @PostMapping("/api/topics/{topicId}/widgets")
     public List<Widget> createWidget(
-            @PathVariable("topicId") String topicId,
-            @RequestBody Widget widget) {
-        widget.setId(UUID.randomUUID().toString());
-        widget.setIndex(widgets.get(topicId).size());
-        widgets.get(topicId).add(widget);
-        return widgets.get(topicId);
+            @PathVariable("topicId") Integer topicId,
+            @RequestBody Widget newWidget) {
+
+        //TODO FIND TOPIC AND SET IT FOR A WIDGET
+        Topic topic = topicRepository.findTopicById(topicId);
+        Integer lastIdx = repository.findAllWidgetsForTopic(topicId).size();
+        newWidget.setIdx(lastIdx+1);
+        newWidget.setTopic(topic);
+        repository.save(newWidget);
+
+        return repository.findAllWidgetsForTopic(topicId);
     }
 
     @PutMapping("/api/topics/{topicId}/widgets/{widgetId}")
     public List<Widget> updateWidget(
-            @PathVariable("widgetId") String widgetId,
-            @PathVariable("topicId") String topicId,
+            @PathVariable("widgetId") Integer widgetId,
+            @PathVariable("topicId") Integer topicId,
             @RequestBody Widget newWidget
     ) {
-        List<Widget> widgetsForTopic = widgets.get(topicId);
+        Widget toUpdate = repository.findWidgetById(widgetId);
+        Topic topic = toUpdate.getTopic();
+        newWidget.setTopic(topic);
 
-        for(int i = 0; i < widgetsForTopic.size(); i++) {
-            if(widgetsForTopic.get(i).getId().equals(widgetId)) {
-                if (widgetsForTopic.get(i).getIndex() != newWidget.getIndex()){
-                    moveWidgets(topicId, widgetId, newWidget, widgetsForTopic.get(i));
-                }
-                widgetsForTopic.set(i,newWidget);
-            }
-        }
-         Collections.sort(widgetsForTopic);
-        return widgetsForTopic;
+        repository.save(newWidget);
+
+        List<Widget> widgets = repository.findAllWidgetsForTopic(topicId);
+         Collections.sort(widgets);
+        return widgets;
     }
 
-    private void moveWidgets(String topicId, String widgetId, Widget newWidget, Widget toMove) {
-        if (toMove.getIndex() < newWidget.getIndex()){
-            Widget nextWidget = widgets.get(topicId).get(toMove.getIndex() + 1);
-            nextWidget.setIndex(nextWidget.getIndex()-1);
-            toMove.setIndex(newWidget.getIndex());
-        } else {
-            Widget prevWidget =  widgets.get(topicId).get(toMove.getIndex() - 1);
-            prevWidget.setIndex(prevWidget.getIndex()+1);
-            toMove.setIndex(newWidget.getIndex());
+    @PutMapping("/api/topics/{topicId}/widgets")
+    public List<Widget> saveAllWidgets(
+            @PathVariable("topicId") Integer topicId,
+            @RequestBody List<Widget> allWidgets
+    ) {
+        for (Widget newWidget: allWidgets){
+            Widget toUpdate = repository.findWidgetById(newWidget.getId());
+            Topic topic = toUpdate.getTopic();
+            newWidget.setTopic(topic);
+
+            repository.save(newWidget);
         }
-    }
+        return repository.findAllWidgetsForTopic(topicId);
+        }
+
 
 
     @DeleteMapping("/api/topics/{topicId}/widgets/{widgetId}")
     public List<Widget> deleteWidget(
-            @PathVariable("widgetId") String widgetId,
-            @PathVariable("topicId") String topicId) {
+            @PathVariable("widgetId") Integer widgetId,
+            @PathVariable("topicId") Integer topicId) {
 
-        List<Widget> widgetsForTopic = widgets.get(topicId);
-        int index = -1;
-        for(int i=0; i<widgetsForTopic.size(); i++) {
-            if(widgetsForTopic.get(i).getId().equals(widgetId)){
-                index = i;
-            }
+        List<Widget> allWidgets = repository.findAllWidgetsForTopic(topicId);
+        Integer shiftFrom = repository.findWidgetById(widgetId).getIdx();
+        for (int ii = shiftFrom; ii < allWidgets.size(); ii++){
+            Widget nextWidget = allWidgets.get(ii);
+            nextWidget.setIdx(nextWidget.getIdx() - 1);
+            repository.save(nextWidget);
         }
-        widgetsForTopic.remove(index);
-        return widgetsForTopic;
+
+        repository.deleteById(widgetId);
+        return repository.findAllWidgetsForTopic(topicId);
     }
 
     @GetMapping("/api/topics/{topicId}/widgets")
-    public List<Widget> findAllWidgets(@PathVariable("topicId") String topicId) {
-        System.out.println("was herre for topic " + topicId);
-        if (widgets.containsKey(topicId)){
-            return widgets.get(topicId);
-        } else {
-            widgets.put(topicId, new ArrayList<>());
-            return widgets.get(topicId);
-        }
+    public List<Widget> findAllWidgets(@PathVariable("topicId") Integer topicId) {
+        return repository.findAllWidgetsForTopic(topicId);
     }
 
     @GetMapping("/api/topics/{topicId}/widgets/{widgetId}")
     public Widget findWidgetById(
-            @PathVariable("widgetId") String widgetId,
-            @PathVariable("topicId") String topicId) {
-        System.out.println("someone called me");
-        for(Widget w: widgets.get(topicId)) {
-            if(w.getId().equals(widgetId)) {
-                return w;
-            }
-        }
-        return null;
+            @PathVariable("widgetId") Integer widgetId,
+            @PathVariable("topicId") Integer topicId) {
+        return repository.findWidgetById(widgetId);
     }
 
-    @GetMapping("/get/widget")
-    public Widget getWidget() {
 
-        return null;
-    }
 }

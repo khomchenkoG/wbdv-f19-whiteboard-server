@@ -1,23 +1,36 @@
 package com.example.wbdvf19widgetserver.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import javax.persistence.*;
+
+@Entity
+@Table(name="widgets")
+
 public class Widget implements Comparable {
     private Type type;
-    private int index;
+    private Integer idx;
     private String link_title;
-    private int heading_size;
+    private Integer heading_size;
     private String heading_data;
     private String list_data;
     private String paragraph_data;
     private String image_url;
     private String link_data;
-    private boolean ordered;
-    private String id;
+    private Boolean ordered;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
+    @ManyToOne
+    @JsonIgnore
+    private Topic topic;
 
     public Widget(Type type, int index, String link_title, int heading_size, String heading_data,
                   String list_data, String paragraph_data, String image_url,
-                  String link_data, boolean ordered, String id) {
+                  String link_data, boolean ordered, Integer id) {
         this.type = type;
-        this.index = index;
+        this.idx = index;
         this.link_title = link_title;
         this.heading_size = heading_size;
         this.heading_data = heading_data;
@@ -29,6 +42,10 @@ public class Widget implements Comparable {
         this.id = id;
     }
 
+    public Widget() {
+
+    }
+
     public Type getType() {
         return type;
     }
@@ -37,12 +54,12 @@ public class Widget implements Comparable {
         this.type = type;
     }
 
-    public int getIndex() {
-        return index;
+    public Integer getIdx() {
+        return idx;
     }
 
-    public void setIndex(int index) {
-        this.index = index;
+    public void setIdx(Integer idx) {
+        this.idx = idx;
     }
 
     public String getLink_title() {
@@ -53,11 +70,11 @@ public class Widget implements Comparable {
         this.link_title = link_title;
     }
 
-    public int getHeading_size() {
+    public Integer getHeading_size() {
         return heading_size;
     }
 
-    public void setHeading_size(int heading_size) {
+    public void setHeading_size(Integer heading_size) {
         this.heading_size = heading_size;
     }
 
@@ -101,26 +118,34 @@ public class Widget implements Comparable {
         this.link_data = link_data;
     }
 
-    public boolean isOrdered() {
+    public Boolean getOrdered() {
         return ordered;
     }
 
-    public void setOrdered(boolean ordered) {
+    public void setOrdered(Boolean ordered) {
         this.ordered = ordered;
     }
 
-    public String getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Integer id) {
         this.id = id;
+    }
+
+    public Topic getTopic() {
+        return topic;
+    }
+
+    public void setTopic(Topic topic) {
+        this.topic = topic;
     }
 
     @Override
     public int compareTo(Object o) {
         Widget other = (Widget)o;
-        return this.getIndex() - other.getIndex();
+        return this.getIdx() - other.getIdx();
     }
 
     public enum Type{
